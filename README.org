@@ -1,8 +1,54 @@
-* cqrs-crmkern
+* CMSKern
 
 A general-purpose CMS.
+It is written in Clojure and ClojureScript.
+
 WIP
 
+** Intro
+
+CMSKern utilizes the following technologies to offer a high flexible browser-based CMS-application:
+
+- JSON-Schema [[http://json-schema.org/]]
+- MongoDB
+- Kafka
+
+CMSKern differs from popular CMS-applications like WordPress or Drupal, in the way, that it does not handle content-delivery and is well-suited for structured data.
+
+*** Lack of API
+CMSKern does not offe a API for content selection or queries. The idea is that the content-delivery application uses the database directly to fetch the content it needs.
+
+*** Kafka
+Every event within CMSKern goes through Kafka, and if you want to link some services together with CMSKern - for example build up a event-sourcing-repo or trigger a search-engine-index, this is the way to do it. 
+
+*** Structured data
+CMSKern has the concept of =content-types= which are defined by JSON-Schemas. The wonderful [[https://github.com/mozilla-services/react-jsonschema-form][react-jsonschema-form]] is used to generate the input forms for arbitrary schemas and are saved in mongodb schemaless.
+
+*** Alternative Subschemas
+Currently react-jsonschema-form lacks the support of =anyOf= and =oneOf=
+CMSKern support this anyOf-structure to generate changable subforms:
+
+#+BEGIN_SRC javascript
+{
+                "title" "Sections",
+                "type" "array",
+                "items" {"anyOf" [
+                                    {"type" "object",
+                                     "title" "Auto"
+                                     "properties"
+                                     {"strs" {"type" "string"}
+                                      "type" {"type" "string"
+                                              "enum" ["auto"]}}}
+                                    {"type" "object",
+                                     "title" "Manual"
+                                     "properties"
+                                     {"ids" {"type" "string"}
+                                      "type" {"type" "string"
+                                        "enum" ["manual"]}}}
+                                    ]
+                         }
+                }
+#+END_SRC
 
 ** Usage
 
@@ -10,6 +56,7 @@ WIP
 - run Kafka on localhost:9092
 - run mongodb on localhost:27017
 - start cms by lein run
+- browse localhost:9088
 
 
 ** License
