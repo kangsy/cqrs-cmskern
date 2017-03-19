@@ -1,0 +1,16 @@
+{
+  "name": "cqrs-cmskern",
+  "version": "0.0.1",
+  "author": "kang@kangrd.com",
+  "scripts": {
+    "watch": "webpack -d --watch",
+    "build": "webpack -p"
+  },
+  "dependencies": {
+      "react-jsonschema-form": "0.41.2",
+      "react-dropzone": "3.9.1",
+      "react": "15.1.0",
+      "react-dom": "15.1.0",
+      "webpack": "1.13.1"
+  }
+}
