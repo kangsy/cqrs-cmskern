@@ -293,6 +293,9 @@
         toggle-dropdown (fn [e] (swap! dropdown? not)
                           (.preventDefault e)
                           (.stopPropagation e))
+        toggle-fold (fn [e] (swap! folded? not)
+                      (.preventDefault e)
+                      (.stopPropagation e))
         ]
     (fn
       [{:keys [formData schema uiSchema formContext registry name] :as args}]
@@ -325,7 +328,7 @@
              ]]
            )
          [:div.fold {:class (when @folded? "folded")}
-          [:a.fold-ctrl {:href "#"} [:span "-"]]
+          [:a.fold-ctrl {:on-click toggle-fold} [:span "-"]]
           (if any-ofs
             (if formData
               [:> schema-field

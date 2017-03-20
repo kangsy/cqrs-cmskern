@@ -193,9 +193,14 @@
                          :transform "scale(1.0)"
                          }]
                                    )
-   [:.fold
+   [:.fold {:position :relative}
     [:.fold-ctrl {:position :absolute
-                  }]]
+                  :right 0
+                  :top 0
+                  }
+     ]
+    [:&.folded
+     [:.field-object {:display :none}]]]
 
 ]
   )

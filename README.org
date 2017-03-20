@@ -7,26 +7,36 @@ WIP
 
 ** Intro
 
-CMSKern utilizes the following technologies to offer a high flexible browser-based CMS-application:
+CMSKern utilizes the following technologies to offer a highly flexible browser-based CMS-application:
 
 - JSON-Schema [[http://json-schema.org/]]
 - MongoDB
 - Kafka
 
-CMSKern differs from popular CMS-applications like WordPress or Drupal, in the way, that it does not handle content-delivery and is well-suited for structured data.
+CMSKern differs from popular CMS-applications like WordPress or Drupal in the way, that it does not handle content-delivery and is primarily designed to manage content in an environment where the underlying schema of the contents changes fairly often.
 
-*** Lack of API
-CMSKern does not offe a API for content selection or queries. The idea is that the content-delivery application uses the database directly to fetch the content it needs.
+*** Architecture
+CMSKern consists of three main parts:
+
+1. Frontend-SPA written in cljs using reagent/re-frame. It communicates mainly via websockets with the server.
+
+2. Backend-UI-App, which handles the client-requests and generates the korresponding Kafka-events.
+
+3. The command-handler does the work.
+
+
+In a distributed environment the ui and the command-handler can be separated and live on different hardware connected via Kafka.
+
 
 *** Kafka
 Every event within CMSKern goes through Kafka, and if you want to link some services together with CMSKern - for example build up a event-sourcing-repo or trigger a search-engine-index, this is the way to do it. 
 
 *** Structured data
-CMSKern has the concept of =content-types= which are defined by JSON-Schemas. The wonderful [[https://github.com/mozilla-services/react-jsonschema-form][react-jsonschema-form]] is used to generate the input forms for arbitrary schemas and are saved in mongodb schemaless.
+CMSKern has the concept of =content-types= which are defined by JSON-Schemas. The wonderful [[https://github.com/mozilla-services/react-jsonschema-form][react-jsonschema-form]] is used to generate the input forms for arbitrary schemas and contents are saved in mongodb schemaless.
 
 *** Alternative Subschemas
 Currently react-jsonschema-form lacks the support of =anyOf= and =oneOf=
-CMSKern support this anyOf-structure to generate changable subforms:
+CMSKern support this anyOf-structure to generate changeable subforms:
 
 #+BEGIN_SRC javascript
 {
@@ -53,6 +63,11 @@ CMSKern support this anyOf-structure to generate changable subforms:
 ** Usage
 
 - generate a RSA keypair and name them cmskern.rsa and cmskern-pub.key
+- install the react-jsonschema-form component via npm
+#+BEGIN_SRC bash
+$ npm install
+$ npm run build
+#+END_SRC
 - run Kafka on localhost:9092
 - run mongodb on localhost:27017
 - start cms by lein run
