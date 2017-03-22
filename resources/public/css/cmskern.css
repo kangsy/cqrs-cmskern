@@ -1772,3 +1772,18 @@ img.preview {
   }
 
 }
+
+.fold {
+  position: relative;
+}
+
+.fold .fold-ctrl {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 1em;
+}
+
+.fold.folded .form-group legend ~ * {
+  display: none;
+}

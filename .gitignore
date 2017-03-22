@@ -18,3 +18,5 @@ resources/public/dcards/cljs/
 resources/public/css/*.map
 figwheel_server.log
 *.swp
+cmskern.rsa
+cmskern-pub.key

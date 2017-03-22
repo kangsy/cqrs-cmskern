@@ -33,7 +33,7 @@
                                     ]
                          }
                 }
-        ui-schema {}
+        ui-schema {"ui:options" {"foldable" true}}
         formdata []
         on-validate (fn [formData errors] (.log js/console ::on-validate formData errors) errors)
         on-submit (fn [arg] (.log js/console ::onsubmit arg))]
@@ -81,7 +81,7 @@
                                              "type" "integer"
                                              }}
                 }
-        ui-schema {}
+        ui-schema {"order_value" {"ui:options" {"foldable" true}}}
         formdata {"order_value" 1}
         on-submit (fn [arg] (.log js/console ::onsubmit arg))]
     (dc/reagent

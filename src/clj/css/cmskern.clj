@@ -197,10 +197,13 @@
     [:.fold-ctrl {:position :absolute
                   :right 0
                   :top 0
+                  :font-size (em 1)
                   }
      ]
     [:&.folded
-     [:.field-object {:display :none}]]]
+     [:.form-group
+      ["legend ~ *" {:display :none} ]]
+     ]]
 
 ]
   )

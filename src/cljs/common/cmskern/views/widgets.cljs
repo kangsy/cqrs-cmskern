@@ -284,8 +284,8 @@
 
 (defn custom-schema-field
   [{:keys [formData schema uiSchema formContext onChange registry name] :as args}]
-  (log/debug ::custom-schema-field :formContext (js->clj formContext))
   (log/debug ::custom-schema-field :schema (js->clj schema))
+  (log/debug ::custom-schema-field :uiSchema (js->clj uiSchema))
   (let [
         selected-schema (r/atom nil) ;; this should be js
         folded? (r/atom false)
@@ -296,6 +296,16 @@
         toggle-fold (fn [e] (swap! folded? not)
                       (.preventDefault e)
                       (.stopPropagation e))
+        ui-schema (js->clj uiSchema :keywordize-keys false)
+        fold? (get-in ui-schema ["ui:options" "foldable"])
+        wrap-if-object (if fold?
+                         (fn [v]
+                           [:div.fold {:class (when @folded? "folded")}
+                            [:a.fold-ctrl {:href "#" :on-click toggle-fold} [:span.glyphicon  {:class (if @folded? "glyphicon-plus" "glyphicon-minus")}]]
+                            v
+                            ])
+                         identity
+                         )
         ]
     (fn
       [{:keys [formData schema uiSchema formContext registry name] :as args}]
@@ -327,8 +337,7 @@
                                                                        :properties :type :enum first) (str "Opton-" idx))]) any-ofs))
              ]]
            )
-         [:div.fold {:class (when @folded? "folded")}
-          [:a.fold-ctrl {:on-click toggle-fold} [:span "-"]]
+         (wrap-if-object
           (if any-ofs
             (if formData
               [:> schema-field
@@ -341,49 +350,9 @@
                 ))
             [:> schema-field
              (assoc args :schema schema)
-             ])]]
-        ))))
-
-(defn multi-array
-  [{:keys [formData schema uiSchema formContext registry name onChange] :as args}]
-  (let [
-        form-data (r/atom formData)
-        one-ofs (js->clj (-> schema .-items .-oneOf) :keywordize-keys true)
-        selected-schema (r/atom {})
-        on-click (fn [e] (let [val (-> e .-target .-value)
-                               ]
-                           (reset! selected-schema (some #(when (= val (:title %)) %) one-ofs)))
-                   )
-        render-widgets (fn []
-                         (log/debug ::multi-array :render-widgets selected-schema)
-                         (let [sc {:type "array"
-                                   :items (clj->js @selected-schema)}]
-                           [:> schema-field {:schema sc
-                                             :registry registry
-                                             :onChange onChange}]
-                           )
-                         )
-        ]
-
-    (fn
-      [{:keys [formData schema uiSchema formContext registry name] :as args}]
-      [:div
-       (render-widgets)
-       [:div.btn-group
-        [:button.btn.btn-default.dropdown-toggle {:data-toggle "dropdown" :type "button" :aria-has-popup true :aria-expanded false}
-         "Add Widget" [:span.caret]]
-        [:ul.dropdown-menu.list-group {:style {:padding 0 :margin 0 :border 0}}
-         (doall (map-indexed (fn [idx option]
-                               [:button.list-group-item {:key idx 
-                                                         :on-click on-click
-                                                         :type "button"
-                                                         :value (:title option)
-                                                         } (:title option)]) one-ofs))
+             ]))
          ]
-        ]]
-      )
-    )
-  )
+        ))))
 
 
 (defn custom-array-field
@@ -417,7 +386,6 @@
                                         ;"TitleField" (r/reactify-component custom-array-field)
                                         ;"DescriptionField" (r/reactify-component custom-array-field)
                                         ;"NumberField" (r/reactify-component custom-array-field)
-   "multi-array" (r/reactify-component multi-array)
    })
 
 (defn remove-nils
