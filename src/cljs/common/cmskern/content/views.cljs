@@ -23,6 +23,7 @@
   [{{:keys [cid ctid dbid]} :route-params} uuid]
   (let [
         form-data (rf/subscribe [:current-content])
+        temp-data (rf/subscribe [:current-content-copy])
         modal-open? (r/atom false)
         modal-content (r/atom nil)
         on-close (handler-fn (.preventDefault event) (reset! modal-open? false))
@@ -90,6 +91,7 @@
         ]
        [:h4 (tr ["Live Changes"])]
        [:div [:pre (with-out-str (cljs.pprint/pprint @changes))]]
+       [:div [:pre (with-out-str (cljs.pprint/pprint (:data @form-data)))]]
        ])))
 
 (defn on-validate-incure
@@ -102,7 +104,7 @@
     ;; sorge dafür, dass dies nicht als "change" erkannt wird
     ;; todo - es sollte auch keine fehler angezeigt werden.
     ;
-    ; (.log js/console ::formdata formdata (not-empty (w/remove-nils formdata))   errors)
+     (.log js/console ::formdata formdata (not-empty (w/remove-nils formdata))   errors)
 
     (when-not (not-empty (w/remove-nils formdata))
       (rf/dispatch [:db/add [:current-content-copy :data] formdata])

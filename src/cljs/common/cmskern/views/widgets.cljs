@@ -20,6 +20,16 @@
 (def  schema-field (aget js/window "deps" "schema-field" "default"))
 (def  schema-utils (aget js/window "deps" "schema-utils"))
 
+(defn remove-nil [x]
+  (if (map? x)
+    (let [kvs (filter (comp not nil? second) x)]
+      (if (empty? kvs) nil (into {} kvs)))
+    x))
+
+(defn remove-nils
+  [m]
+  (clojure.walk/postwalk remove-nil m))
+
 (defn select-binary-ref
   ""
   [{:keys [dbid q] :as params}
@@ -271,12 +281,15 @@
 (defn resolve-schema
   ""
   [schemas form-data]
-  (log/debug ::resolve-schema schemas)
-  (log/debug ::resolve-schema :formdata (js->clj form-data))
+  ;; schemas cljs
+  ;; form-data cljs
+  ;; must return js
+  ;(log/debug ::resolve-schema schemas)
+  ;(log/debug ::resolve-schema :formdata form-data)
   (when form-data
-    (let [t (-> form-data .-type)
+    (let [t (get form-data "type")
           s (some #(when (= t (-> % :properties :type :enum first)) %) schemas)]
-      (log/debug ::resolve-schema t :s s)
+      ;(log/debug ::resolve-schema t :s s)
       (clj->js
        s
        )
@@ -284,8 +297,8 @@
 
 (defn custom-schema-field
   [{:keys [formData schema uiSchema formContext onChange registry name] :as args}]
-  (log/debug ::custom-schema-field :schema (js->clj schema))
-  (log/debug ::custom-schema-field :uiSchema (js->clj uiSchema))
+  ;(log/debug ::custom-schema-field :schema (js->clj schema))
+  ;(log/debug ::custom-schema-field :uiSchema (js->clj uiSchema))
   (let [
         selected-schema (r/atom nil) ;; this should be js
         folded? (r/atom false)
@@ -341,29 +354,25 @@
           (if any-ofs
             (if formData
               [:> schema-field
-               (assoc args :schema (resolve-schema any-ofs formData))
+               (assoc args :schema (resolve-schema any-ofs (remove-nils (js->clj formData)))
+                      :formData (clj->js (remove-nils (js->clj formData)))
+                      )
                ]
               (when @selected-schema
                 [:> schema-field
-                 (assoc args :schema @selected-schema)
+                 (assoc args :schema @selected-schema
+                        :formData (clj->js (remove-nils (js->clj formData)))
+)
                  ]
                 ))
             [:> schema-field
-             (assoc args :schema schema)
+             (assoc args :schema schema
+                    :formData (clj->js (remove-nils (js->clj formData)))
+)
              ]))
          ]
         ))))
 
-
-(defn custom-array-field
-  [{:keys [formData schema uiSchema formContext registry name] :as args}]
-  (log/debug ::custom-array-field :formContext (js->clj formContext))
-  (log/debug ::custom-array-field :schema (js->clj schema))
-  (fn
-    [{:keys [formData schema uiSchema formContext registry name] :as args}]
-    [:div#custom
-     [:p "pretty dumb array field"]
-     ]))
 
 (defn content-callout
   [& args]
@@ -380,22 +389,8 @@
                                         :q {}
                                         })
    "SchemaField" (r/reactify-component custom-schema-field)
-                                        ;"ArrayField" (r/reactify-component custom-array-field)
-                                        ;"ObjectField" (r/reactify-component custom-array-field)
-                                        ;"UnsupportedField" (r/reactify-component custom-array-field)
-                                        ;"TitleField" (r/reactify-component custom-array-field)
-                                        ;"DescriptionField" (r/reactify-component custom-array-field)
-                                        ;"NumberField" (r/reactify-component custom-array-field)
    })
 
-(defn remove-nils
-  [m]
-  (let [f (fn [x]
-            (if (map? x)
-              (let [kvs (filter (comp not nil? second) x)]
-                (if (empty? kvs) nil (into {} kvs)))
-              x))]
-    (clojure.walk/postwalk f m)))
 
 (defn json-form
   [args]
