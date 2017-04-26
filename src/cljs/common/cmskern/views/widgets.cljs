@@ -20,16 +20,6 @@
 (def  schema-field (aget js/window "deps" "schema-field" "default"))
 (def  schema-utils (aget js/window "deps" "schema-utils"))
 
-(defn remove-nil [x]
-  (if (map? x)
-    (let [kvs (filter (comp not nil? second) x)]
-      (if (empty? kvs) nil (into {} kvs)))
-    x))
-
-(defn remove-nils
-  [m]
-  (clojure.walk/postwalk remove-nil m))
-
 (defn select-binary-ref
   ""
   [{:keys [dbid q] :as params}
@@ -290,14 +280,14 @@
     (let [t (get form-data "type")
           s (some #(when (= t (-> % :properties :type :enum first)) %) schemas)]
       ;(log/debug ::resolve-schema t :s s)
-      (clj->js
-       s
-       )
+      ;; we return a empty schema, if we can't find a sub-schema
+      (clj->js (or s {}))
       )))
 
 (defn custom-schema-field
   [{:keys [formData schema uiSchema formContext onChange registry name] :as args}]
-  ;(log/debug ::custom-schema-field :schema (js->clj schema))
+  ;(.log js/console ::custom-schema-field :schema (js->clj schema))
+  ;(.log js/console ::custom-schema-field :formdata (js->clj formData))
   ;(log/debug ::custom-schema-field :uiSchema (js->clj uiSchema))
   (let [
         selected-schema (r/atom nil) ;; this should be js
@@ -306,15 +296,16 @@
         toggle-dropdown (fn [e] (swap! dropdown? not)
                           (.preventDefault e)
                           (.stopPropagation e))
-        toggle-fold (fn [e] (swap! folded? not)
+        toggle-fold (fn [e] 
                       (.preventDefault e)
-                      (.stopPropagation e))
+                      (.stopPropagation e)
+                      (swap! folded? not))
         ui-schema (js->clj uiSchema :keywordize-keys false)
         fold? (get-in ui-schema ["ui:options" "foldable"])
         wrap-if-object (if fold?
                          (fn [v]
                            [:div.fold {:class (when @folded? "folded")}
-                            [:a.fold-ctrl {:href "#" :on-click toggle-fold} [:span.glyphicon  {:class (if @folded? "glyphicon-plus" "glyphicon-minus")}]]
+                            [:span.fold-ctrl {:on-click toggle-fold} [:span.glyphicon  {:class (if @folded? "glyphicon-plus" "glyphicon-minus")}]]
                             v
                             ])
                          identity
@@ -322,6 +313,8 @@
         ]
     (fn
       [{:keys [formData schema uiSchema formContext registry name] :as args}]
+      ;(.log js/console ::custom-schema-field :schema :inner (js->clj schema))
+      ;(.log js/console ::custom-schema-field :schema :js-inner schema )
       (let [
             any-ofs (js->clj (-> schema .-anyOf) :keywordize-keys true)
             on-click (fn [e] (let [val (js/parseInt (-> e .-target .-value))
@@ -354,20 +347,20 @@
           (if any-ofs
             (if formData
               [:> schema-field
-               (assoc args :schema (resolve-schema any-ofs (remove-nils (js->clj formData)))
-                      :formData (clj->js (remove-nils (js->clj formData)))
+               (assoc args :schema (resolve-schema any-ofs (f/remove-nils (js->clj formData)))
+                      :formData (clj->js (f/remove-nils (js->clj formData)))
                       )
                ]
               (when @selected-schema
                 [:> schema-field
                  (assoc args :schema @selected-schema
-                        :formData (clj->js (remove-nils (js->clj formData)))
+                        :formData (clj->js (f/remove-nils (js->clj formData)))
 )
                  ]
                 ))
             [:> schema-field
              (assoc args :schema schema
-                    :formData (clj->js (remove-nils (js->clj formData)))
+                    :formData (clj->js (f/remove-nils (js->clj formData)))
 )
              ]))
          ]
@@ -422,7 +415,7 @@
         (log/debug ::json-form :args args)
         [:> react-jsonschema-form (merge args {:fields default-fields
                                                :schema (clj->js (:schema args))
-                                               :formData (clj->js (remove-nils (:formData args)))})]
+                                               :formData (clj->js (f/remove-nils (:formData args)))})]
         )
       })))
 

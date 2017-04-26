@@ -23,7 +23,6 @@
   [{{:keys [cid ctid dbid]} :route-params} uuid]
   (let [
         form-data (rf/subscribe [:current-content])
-        temp-data (rf/subscribe [:current-content-copy])
         modal-open? (r/atom false)
         modal-content (r/atom nil)
         on-close (handler-fn (.preventDefault event) (reset! modal-open? false))
@@ -38,7 +37,7 @@
                                  ))
         on-incure (handler-fn (.preventDefault event)
                               (log/debug ::on-incure (:data @modal-content))
-                              (rf/dispatch [:incure-data (:data @modal-content)]))
+                              (rf/dispatch [:inject-into-current-content (:data @modal-content)]))
         publish (handler-fn (.preventDefault event)
                             (rf/dispatch [:content/publish dbid ctid cid]))
         delete (handler-fn (.preventDefault event)
@@ -98,17 +97,13 @@
   "Diese fn nutzt das live-validate-Feature um die Form-Daten der JsonSchema-React-Compo
   in ein Clojure-Atom zu schreiben."
   [formData errors]
-  (let [formdata (js->clj formData :keywordize-keys true)]
-    (rf/dispatch [:db/add [:current-content :data] formdata])
+  (let [formdata (f/remove-nils (js->clj formData :keywordize-keys true))]
+    ;;(.log js/console ::formdata formdata)
+    (rf/dispatch [:inject-into-current-content formdata])
     ;; wenn mit nil initialisiert, sorgt dies dafür dass die struktur entsteht.
     ;; sorge dafür, dass dies nicht als "change" erkannt wird
     ;; todo - es sollte auch keine fehler angezeigt werden.
     ;
-     (.log js/console ::formdata formdata (not-empty (w/remove-nils formdata))   errors)
-
-    (when-not (not-empty (w/remove-nils formdata))
-      (rf/dispatch [:db/add [:current-content-copy :data] formdata])
-      )
     )
   errors
   )
@@ -138,7 +133,7 @@
            [w/json-form {:schema @json-schema
                          :onSubmit on-submit
                          :uiSchema @ui-schema
-                         :formData @content-data
+                         :formData (clj->js @content-data)
                          :liveValidate true
                          :validate on-validate-incure
                          }]

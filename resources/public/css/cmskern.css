@@ -1782,6 +1782,7 @@ img.preview {
   right: 0;
   top: 0;
   font-size: 1em;
+  cursor: pointer;
 }
 
 .fold.folded .form-group legend ~ * {

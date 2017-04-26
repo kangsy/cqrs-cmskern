@@ -30,6 +30,16 @@
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
+(defn remove-nil [x]
+  (if (map? x)
+    (let [kvs (filter (comp not nil? second) x)]
+      (if (empty? kvs) nil (into {} kvs)))
+    x))
+
+(defn remove-nils
+  [m]
+  (clojure.walk/postwalk remove-nil m))
+
 ;; ---------------------------------------------------------------
 ;; time functions
 ;; ---------------------------------------------------------------

@@ -12,7 +12,7 @@
  :current-content-data
  (fn [db [_]]
    (or
-    (:current-content-data db)
+    (:data (:current-content db))
     {})
    ))
 
@@ -23,9 +23,9 @@
    ))
 
 (rf/reg-sub
- :current-content-copy
+ :original-content
  (fn [db [_]]
-   (:current-content-copy db)
+   (:original-content db)
    ))
 
 (rf/reg-sub
@@ -38,9 +38,9 @@
 (rf/reg-sub
  :content/changes
  :<- [:current-content]
- :<- [:current-content-copy]
- (fn [[current-content current-content-copy] _]
-   (let [d (clojure.data/diff (:data current-content) (:data current-content-copy))]
+ :<- [:original-content]
+ (fn [[current-content original-content] _]
+   (let [d (clojure.data/diff (:data current-content) (:data original-content))]
      d
      )
    ))

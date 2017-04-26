@@ -5,6 +5,7 @@
 
             [cmskern.config :as config]
             [cmskern.routes :as route]
+            [cmskern.functions :as f]
             ))
 
 (rf/reg-event-fx
@@ -15,8 +16,7 @@
      {:db (assoc db :current-db dbid
                  :contents nil
                  :current-content nil
-                 :current-content-data nil
-                 :current-content-copy nil
+                 :original-content nil
                  :current-ctid ctid
                  :current-cts nil
                  :route route)
@@ -36,9 +36,11 @@
                               :query {:_id (js/parseInt cid)}}]
                    config/default-timeout
                    (fn [res]
-                     (rf/dispatch [:db/add [:current-content-copy] res])
-                     (rf/dispatch [:db/add [:current-content-data] (:data res)])
-                     (rf/dispatch [:db/add [:current-content] res]))
+                     ;; res ist clj
+                     (let [d (f/remove-nils res)]
+                     (rf/dispatch [:db/add [:original-content] d])
+                     ;(rf/dispatch [:db/add [:current-content-data] (:data res)])
+                     (rf/dispatch [:db/add [:current-content] d])))
                    ])
                 ]
       })
@@ -61,7 +63,7 @@
    ))
 
 (rf/reg-event-db
- :incure-data
+ :inject-into-current-content
  rf/debug
  (fn [db [_ data]]
    (assoc-in db [:current-content :data] data))

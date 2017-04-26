@@ -198,6 +198,7 @@
                   :right 0
                   :top 0
                   :font-size (em 1)
+                  :cursor :pointer
                   }
      ]
     [:&.folded
