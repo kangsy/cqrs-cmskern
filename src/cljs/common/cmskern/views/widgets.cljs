@@ -213,14 +213,12 @@
           modal-open? (r/atom false)
           self (r/current-component)
           sync-data (fn [d]
-                      (log/debug ::sync-data d)
                       (-> self .-props (.onChange (clj->js d)))
                       )
           on-select (fn [v]
-                      (log/debug ::on-select v)
                       (reset! data (-> v
                                        field-mapper
-                                       (select-keys (keys @data))))
+                                       (select-keys (keys (:properties (js->clj schema :keywordize-keys true))))))
                       (sync-data @data)
                       )
           on-click (handler-fn

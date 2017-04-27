@@ -7,6 +7,7 @@
 
    [cljs.test :as t :include-macros true :refer-macros [testing is]]
 
+   [cmskern.functions :as f :refer [tr]]
    [cmskern.views.widgets :as w])
   (:require-macros
    [taoensso.timbre :as log]
@@ -138,7 +139,7 @@
         schema (js->clj (.parse js/JSON sstr))
         ui-schema {"ui:options" {"foldable" true}}
         ;formdata [{"type" "Manual", "title" "aaa", "description" "", "teaser_type" "image", "articles" [{"idref" "22" "catchline" "", "title" "", "teaser" "", "imageref" ""}] }]
-        formdata (clj->js (w/remove-nils [{:type "Manual",
+        formdata (clj->js (f/remove-nils [{:type "Manual",
                                            :title nil,
                                            :description nil,
                                            :teaser_type "image",

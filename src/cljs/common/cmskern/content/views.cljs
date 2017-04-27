@@ -81,7 +81,7 @@
            ^{:key idx} [:li [:div.ts (when (:ts v) (f/epoch->str (:ts v) "HH:mm:ss - dd.MM.y"))]
                         [:div nil (:subject v) " - " (:by v)]
                         (when (-> v :data :version)
-                          [:a {:on-click (open-modal (-> v :data :version)) } (tr [(str "Version " (-> v :data :version))])]
+                          [:a {:role :button :on-click (open-modal (-> v :data :version)) } (tr [(str "Version " (-> v :data :version))])]
 
                           )
                         ]
